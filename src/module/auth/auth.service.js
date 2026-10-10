@@ -1,9 +1,7 @@
 import { userModel } from "../../database/model/user.model.js"
 import { generateCompare, generateHash } from "../../common/middleware/services/encreptio.js"
-import jwt from 'jsonwebtoken'
 import { badRequestException, conflicException, notFoundException, unauthorizedException } from "../../common/exciptions/error.exciptions.js"
-import { env } from "../../config/env.service.js"
-import { generatetoken } from "../../common/middleware/services/token.service.js"
+import { genaretAccessTokenFun, generatetoken } from "../../common/middleware/services/token.service.js"
 
 // signUp
 export const signUp = async (body) => {
@@ -38,7 +36,6 @@ export const signIn = async (body) => {
     const comparePassword = await generateCompare(password, findEmail.password)
     // if password is incorrect
     if (!comparePassword) return unauthorizedException({ message: "passwords do not match" })
-
     // const token = jwt.sign({ id: findEmail._id }, env.jwtSecret , {expiresIn:'30min' , audience: 'user'})
     const token = generatetoken(findEmail)
     // return success message
@@ -53,4 +50,15 @@ export const getUserById = async (id) => {
     if (!userData) return notFoundException({ message: "not found users" })
     // return user data
     return { message: "found user", user: userData }
+}
+
+// genaret-Access-Token
+export const genaretAccessToken = (body)=>{
+    const {refreshToken} = body
+    // generate accessToken from refreshToken
+    const {accessToken} =  genaretAccessTokenFun(refreshToken)
+    // if accessToken is invalid
+    if(!accessToken) return badRequestException('invalid token')
+    // return accessToken
+    return {accessToken:accessToken}
 }

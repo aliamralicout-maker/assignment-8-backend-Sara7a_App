@@ -16,7 +16,7 @@ databaseConnection()
 // handel Error
 app.use((err,req,res,next)=>{
     const stack = env.mode === 'dev' ? err.stack : null
-    res.status(err.cause?.status || 500).json({message: err.message , stack})
+    res.status(err.cause?.status || 500).json({message: err.message , stack , extra: err.cause?.extra})
 })
 
 

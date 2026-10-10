@@ -25,3 +25,31 @@ export const generatetoken = (user) => {
     
     return { accessToken, refreshToken }
 }
+
+
+export const genaretAccessTokenFun = (refreshAccessToken) => {
+
+    const data = jwt.decode(refreshAccessToken)    
+
+    let signature;
+    let refreshSignature;
+    let aud;
+
+    switch (data.aud) {
+        case "Admin":
+            signature = env.AdminSignature
+            refreshSignature = env.AdminrefreshSignature
+            aud = "admin"
+            break
+        default:
+            signature = env.UserSignature
+            refreshSignature = env.UserrefreshSignature
+            aud = "user"
+    }
+
+    const decodeddata = jwt.verify(refreshAccessToken, refreshSignature)
+
+    const accessToken = jwt.sign({ id: decodeddata.id }, signature, { expiresIn: '30min', audience: aud })
+
+    return { accessToken }
+}
