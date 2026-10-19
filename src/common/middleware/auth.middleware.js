@@ -35,6 +35,4 @@ export const auth = (req, res, next) => {
         default:
             break;
     }
-
-
 }

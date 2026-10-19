@@ -6,11 +6,11 @@ export const databaseConnection = () => {
 
     mongoose.connect(env.databaseUrl).then(() => {
 
-        console.log({ message: "database is connectd" });
+        console.log({ message: "database connected successfully" });
 
 
     }).catch((err) => {
-        console.log(err);
+        console.log({ message: "database connection failed", error: err });
     })
 
 }

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { genaretAccessToken, getUserById, signIn, signUp } from "./auth.service.js";
+import { genaretAccessToken, getAllUsers, getUserById, signIn, signUp, verfyAcount } from "./auth.service.js";
 import { auth } from '../../common/middleware/auth.middleware.js'
 import { userLoginSchema, userRegisterSchema } from "./auth.validation.js";
 import { validation } from "../../common/middleware/services/validation.service.js";
-
+import { checkRole } from "../../common/middleware/checkRole.js";
 
 const router = Router()
 
@@ -33,6 +33,18 @@ router.post('/genaret-access-token', (req, res) => {
     res.json(data)
 })
 
+// verfy Acount
+router.put('/verfy-acount' , async (req,res)=>{
+    const data = await verfyAcount(req.body);
+    res.json(data)
+})
+
+
+// git all users
+router.get('/get-all-users',auth, checkRole(['admin']) , async (req, res) => {
+    const data = await getAllUsers()
+    res.json(data)
+})
 
 
 

@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 
 
-dotenv.config({path:path.resolve(`./.env.${process.env.NODE_ENV}`)})
+dotenv.config({ path: path.resolve(`./.env.${process.env.NODE_ENV}`) })
 
 const port = process.env.PORT
 const databaseUrl = process.env.DATABASE_URI
@@ -13,6 +13,9 @@ const UserSignature = process.env.ACCESS_SIGNATUER_USER
 const UserrefreshSignature = process.env.REFRESH_SIGNATUER_USER
 const AdminSignature = process.env.ACCESS_SIGNATUER_ADMIN
 const AdminrefreshSignature = process.env.REFRESH_SIGNATUER_ADMIN
+const userMail = process.env.EMAIL_USER
+const passwordMail = process.env.EMAIL_APP_PASSWORD
+const redisUrl = process.env.REDIS_URI
 
 
 export const env = {
@@ -24,5 +27,8 @@ export const env = {
     UserSignature,
     UserrefreshSignature,
     AdminSignature,
-    AdminrefreshSignature
+    AdminrefreshSignature,
+    userMail,
+    passwordMail,
+    redisUrl
 }

@@ -2,6 +2,7 @@ import { userModel } from "../../database/model/user.model.js"
 import { generateCompare, generateHash } from "../../common/middleware/services/encreptio.js"
 import { badRequestException, conflicException, notFoundException, unauthorizedException } from "../../common/exciptions/error.exciptions.js"
 import { genaretAccessTokenFun, generatetoken } from "../../common/middleware/services/token.service.js"
+import { sendEmail } from "../../common/middleware/sendEmail.js"
 
 // signUp
 export const signUp = async (body) => {
@@ -16,8 +17,12 @@ export const signUp = async (body) => {
     //  else                                              convert string to number 
     // const hashedPassword = await bcrypt.hash(password, Number(env.salt))
     const hashedPassword = await generateHash(password)
-    // create hashed password
-    const createUser = await userModel.create({ userName, email, password: hashedPassword, age, gender, role })
+    // OTP
+    const otp = Math.round(Math.random() * 1000000)
+    // create user
+    const createUser = await userModel.create({ userName, email, password: hashedPassword, age, gender, role, otp })
+    // sen otp to mail
+    sendEmail({ to: email, subject: 'sara7aApp', html: `<h1>your otp is ${otp}</h1>` })
     // return user data 
     return { message: 'create successfully', user: createUser }
 }
@@ -31,6 +36,8 @@ export const signIn = async (body) => {
     const findEmail = await userModel.findOne({ email })
     // if email not found
     if (!findEmail) return unauthorizedException({ message: "not found email" })
+    // check if user is verified
+    if (!findEmail.isVerified) return unauthorizedException({ message: "user not verified" })
     // compare password with hashed password
     // const comparePassword = await bcrypt.compare(password ,findEmail.password)
     const comparePassword = await generateCompare(password, findEmail.password)
@@ -53,12 +60,42 @@ export const getUserById = async (id) => {
 }
 
 // genaret-Access-Token
-export const genaretAccessToken = (body)=>{
-    const {refreshToken} = body
+export const genaretAccessToken = (body) => {
+    const { refreshToken } = body
     // generate accessToken from refreshToken
-    const {accessToken} =  genaretAccessTokenFun(refreshToken)
+    const { accessToken } = genaretAccessTokenFun(refreshToken)
     // if accessToken is invalid
-    if(!accessToken) return badRequestException('invalid token')
+    if (!accessToken) return badRequestException('invalid token')
     // return accessToken
-    return {accessToken:accessToken}
+    return { accessToken: accessToken }
+}
+
+
+// verify account
+export const verfyAcount = async (body) => {
+    // get otp and email from body
+    const { otp, email } = body
+    // find user by email
+    const userData = await userModel.findOne({ email })
+    // if user not found
+    if (!userData) return unauthorizedException({ message: "user not found" })
+    // check if user is already verified
+    if (userData.isVerified) return badRequestException({ message: 'user alredy verified' })
+    // compare otp with user otp
+    if (userData.otp != otp) return badRequestException({ message: "otp does not match" })
+    // verify user account
+    userData.isVerified = true
+    // clear otp after verification
+    userData.otp = null
+    // save updated user data
+    await userData.save()
+    // return user data
+    return userData
+}
+
+
+// git all users
+export const getAllUsers = async () => {
+    const data = await userModel.find()
+    return { message: "found all users", users: data }
 }

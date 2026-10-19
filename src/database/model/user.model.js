@@ -1,5 +1,6 @@
 import mongoose, { modelNames } from "mongoose";
 import { genderEnum, providerEnum, roleEnum } from "../../common/enums/enum.js";
+import { de } from "zod/locales";
 
 
 
@@ -43,7 +44,14 @@ const userSchema = mongoose.Schema({
     },
     coverImage: {
         type: [String]
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        type: String
     }
-},{timestamps: true})
+}, { timestamps: true })
 
 export const userModel = mongoose.model('user', userSchema)

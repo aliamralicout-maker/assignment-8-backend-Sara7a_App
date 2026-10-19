@@ -19,7 +19,6 @@ app.use((err,req,res,next)=>{
     res.status(err.cause?.status || 500).json({message: err.message , stack , extra: err.cause?.extra})
 })
 
-
 app.listen(env.port , ()=>{
     console.log({message: `server is runing in port ${env.port}`});
 })
