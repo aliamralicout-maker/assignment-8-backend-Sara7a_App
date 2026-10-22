@@ -3,9 +3,11 @@ import { generateCompare, generateHash } from "../../common/middleware/services/
 import { badRequestException, conflicException, notFoundException, unauthorizedException } from "../../common/exciptions/error.exciptions.js"
 import { genaretAccessTokenFun, generatetoken } from "../../common/middleware/services/token.service.js"
 import { sendEmail } from "../../common/middleware/sendEmail.js"
+import { randomInt } from 'node:crypto'
+import { set, get } from "../../database/Redis/redis.service.js"
 
 // signUp
-export const signUp = async (body) => {
+export const signUp = async (body, file) => {
     // get email and password from body
     const { userName, email, password, confirmPassword, age, gender, role } = body
     //  find user by email
@@ -17,10 +19,14 @@ export const signUp = async (body) => {
     //  else                                              convert string to number 
     // const hashedPassword = await bcrypt.hash(password, Number(env.salt))
     const hashedPassword = await generateHash(password)
+    // file image
+    const imagePath = file ? file.path : null
     // OTP
-    const otp = Math.round(Math.random() * 1000000)
+    const otp = randomInt(100000, 1000000).toString()
     // create user
-    const createUser = await userModel.create({ userName, email, password: hashedPassword, age, gender, role, otp })
+    const createUser = await userModel.create({ userName, email, password: hashedPassword, age, gender, role, profileImage: imagePath })
+    // set otp in redis with 5 min ttl
+    await set({ key: `otp::${createUser._id}`, value: otp, ttl: 60 * 5 })
     // sen otp to mail
     sendEmail({ to: email, subject: 'sara7aApp', html: `<h1>your otp is ${otp}</h1>` })
     // return user data 
@@ -81,12 +87,12 @@ export const verfyAcount = async (body) => {
     if (!userData) return unauthorizedException({ message: "user not found" })
     // check if user is already verified
     if (userData.isVerified) return badRequestException({ message: 'user alredy verified' })
-    // compare otp with user otp
-    if (userData.otp != otp) return badRequestException({ message: "otp does not match" })
+    // get otp from redis
+    const redisOtp = await get({key:`otp::${userData._id}`})
+    // compare otp with redisOtp
+    if (redisOtp != otp) return badRequestException({ message: "otp does not match" })
     // verify user account
     userData.isVerified = true
-    // clear otp after verification
-    userData.otp = null
     // save updated user data
     await userData.save()
     // return user data

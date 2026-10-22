@@ -13,8 +13,8 @@ export const userRegisterSchema = z.strictObject({
     email: z.string().email(),
     password: z.string().min(4),
     confirmPassword: z.string().min(4),
-    age: z.number().int().min(1).max(90),
-    gender: z.union([z.literal(genderEnum.male) , z.literal(genderEnum.female)]),
-    role: z.union([z.literal(roleEnum.user),z.literal(roleEnum.admin)])
+    age: z.coerce.number().int().min(1).max(90),
+    gender: z.coerce.number().pipe(z.union([z.literal(genderEnum.male) , z.literal(genderEnum.female)])),
+    role: z.coerce.number().pipe(z.union([z.literal(roleEnum.user),z.literal(roleEnum.admin)]))
 }).refine((data)=> data.confirmPassword === data.password ,{message: "Passwords do not match" , path:["confirmPassword"]})
 

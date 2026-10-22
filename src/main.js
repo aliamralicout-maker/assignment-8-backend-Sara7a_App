@@ -2,15 +2,23 @@ import express from 'express'
 import { databaseConnection } from './database/connections.js'
 import { env } from './config/env.service.js'
 import authRouter from '../src/module/auth/auth.controller.js'
+import { redisConnection } from './database/Redis/redis.connection.js'
 
+import { fileURLToPath } from 'node:url';
+import path from 'path'
 
+// Read file upload configuration
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const uploadPath = path.resolve(__dirname, '../uploads')
 
 const app = express()
 app.use(express.json())
 app.use('/auth', authRouter)
+app.use('/uploads',express.static(uploadPath))
 
 databaseConnection()
-
+await redisConnection()
 
 
 // handel Error

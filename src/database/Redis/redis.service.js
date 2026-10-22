@@ -1,4 +1,5 @@
-import { redisClient } from "../../database/redis.connection.js";
+import { redisConnection } from './redis.connection.js'
+const redisClient = await redisConnection()
 
 export const set = async ({ key, value, ttl = undefined }) => {
     if (typeof value !== 'string') {
